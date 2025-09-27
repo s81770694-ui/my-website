@@ -61,16 +61,40 @@
       <audio id="marsAudio">
         <source src="mars.mp3" type="audio/mpeg">  
       </audio>
+
+      <script>
+function playmars() {
+    var audio = document.getElementById("marsAudio");
+    audio.currentTime = 0; // baştan çal
+    audio.play();
+}
+</script>
         <img src="earth.png" alt="Earth" onclick="document.getElementedById('earthAudio').play();">
       
       <audio id="earthAudio">
         <source src="earth.mp3" type="audio/mpeg">
       </audio>
+
+      <script>
+function playEarth() {
+    var audio = document.getElementById("earthAudio");
+    audio.currentTime = 0; // baştan çal
+    audio.play();
+}
+</script>
         <img src="jupiter.png" alt="Jupiter" onclick="document.getElementedById('jupiterAudio').play();">
       
          <audio id="jupiterAudio">
         <source src="jupiter.mp3" type="audio/mpeg">
          </audio>
+
+      <script>
+function playJupiter() {
+    var audio = document.getElementById("jupiterAudio");
+    audio.currentTime = 0; // baştan çal
+    audio.play();
+}
+</script>
 
     <footer>Created with GitHub Pages 🚀</footer>
 </body>
