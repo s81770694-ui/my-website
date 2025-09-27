@@ -57,44 +57,28 @@
 
     <div class="planets">
         <img src="mars.png" alt="Mars" onclick="document.getElementedById('marsAudio').play();">
+       <img src="earth.png" alt="Earth" onclick="document.getElementedById('earthAudio').play();">
+       <img src="jupiter.png" alt="Jupiter" onclick="document.getElementedById('jupiterAudio').play();">
       
+      <button onclick="startMusic()">Start Space Music</button>
+
       <audio id="marsAudio">
-        <source src="mars.ogg" type="audio/ogg">  
+        <source src="mars.mp3" type="audio/mpeg">  
       </audio>
-
-      <script>
-function playmars() {
-    var audio = document.getElementById("marsAudio");
-    audio.currentTime = 0; // baştan çal
-    audio.play();
-}
-</script>
-        <img src="earth.png" alt="Earth" onclick="document.getElementedById('earthAudio').play();">
-      
       <audio id="earthAudio">
-        <source src="earth.ogg" type="audio/ogg">
+        <source src="earth.mp3" type="audio/mpeg">
       </audio>
-
-      <script>
-function playEarth() {
-    var audio = document.getElementById("earthAudio");
-    audio.currentTime = 0; // baştan çal
-    audio.play();
-}
-</script>
-        <img src="jupiter.png" alt="Jupiter" onclick="document.getElementedById('jupiterAudio').play();">
-      
-         <audio id="jupiterAudio">
-        <source src="jupiter.ogg" type="audio/ogg">
+        <audio id="jupiterAudio">
+        <source src="jupiter.mp3" type="audio/mpeg">
          </audio>
-
+      
       <script>
-function playJupiter() {
-    var audio = document.getElementById("jupiterAudio");
-    audio.currentTime = 0; // baştan çal
-    audio.play();
-}
-</script>
+       function startMusic() {
+           document.getElementById("marsAudio").play();
+          document.getElementById("earthAudio").play();
+         document.getElementedById("jupiterAudio").play();
+      }
+    </script>
 
     <footer>Created with GitHub Pages 🚀</footer>
 </body>
