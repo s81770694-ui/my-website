@@ -12,18 +12,21 @@ my website
             text-align: center;
             padding: 50px;
         }
-
-        h1 {
+     h1 {
             font-size: 50px;
             margin-bottom: 20px;
             color: #ffcc00;
-        }
+  }
 
-        p {
-            font-size: 20px;
+ p {
+       
+            
+font-size: 20px;
             margin-bottom: 40px;
         }
+    
 
+,
         .planets img {
             margin: 20px;
             border-radius: 50%;
@@ -32,11 +35,12 @@ my website
             transition: transform 0.3s;
         }
 
-        .planets img:hover {
+
+.planets img:hover {
             transform: scale(1.2);
         }
 
-        footer {
+footer {
             margin-top: 50px;
             font-size: 14px;
             color: #aaa;
@@ -47,12 +51,12 @@ my website
     <h1>Welcome to Space!</h1>
     <p>Explore the planets of our solar system.</p>
 
-    <div class="planets">
+  <div class="planets">
         <img src="mars.png" alt="Mars">
         <img src="earth.png" alt="Earth">
         <img src="jupiter.png" alt="Jupiter">
     </div>
 
-    <footer>Created with GitHub Pages 🚀</footer>
+<footer>Created with GitHub Pages 🚀</footer>
 </body>
 </html>
