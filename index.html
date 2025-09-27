@@ -1,88 +1,66 @@
-<!DOCKTYPE html>
-<html>
-<head>
-  <title>My First Website</title>
-</head>
-  <body>
-    <h1>Hello World! </h1>
-    <p>This is my Github Page Website.</p>
-  </body>
-</html>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My Space Website</title>
-    <style>
-        body {
-            background: radial-gradient(circle at top, #0b0f3b, #000);
-            color: #fff;
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            padding: 50px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Music</title>
+  <style>
+    body {
+      background: black;
+      color: yellow;
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
 
-        h1 {
-            font-size: 50px;
-            margin-bottom: 20px;
-            color: #ffcc00;
-        }
+    h1 {
+      font-size: 40px;
+    }
 
-        p {
-            font-size: 20px;
-            margin-bottom: 40px;
-        }
+    .planets {
+      display: flex;
+      justify-content: center;
+      gap: 30px; /* gezegenler arası boşluk */
+      margin-top: 20px;
+    }
 
-        .planets img {
-            margin: 20px;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            transition: transform 0.3s;
-        }
+    .planets img {
+      width: 120px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
 
-        .planets img:hover {
-            transform: scale(1.2);
-        }
+    .planets img:hover {
+      transform: scale(1.2);
+    }
 
-        footer {
-            margin-top: 50px;
-            font-size: 14px;
-            color: #aaa;
-        }
-    </style>
+    footer {
+      margin-top: 50px;
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to Space!</h1>
-    <p>Click a planet to hear its music!</p>
+  <h1>Welcome to Space!</h1>
+  <p>Click a planet to hear its music!</p>
 
-    <div class="planets">
-        <img src="mars.png" alt="Mars" onclick="document.getElementedById('marsAudio').play();">
-       <img src="earth.png" alt="Earth" onclick="document.getElementedById('earthAudio').play();">
-       <img src="jupiter.png" alt="Jupiter" onclick="document.getElementedById('jupiterAudio').play();">
-      
-      <button onclick="startMusic()">Start Space Music</button>
+  <div class="planets">
+    <img src="mars.png" alt="Mars" onclick="document.getElementById('marsAudio').play()">
+    <img src="earth.png" alt="Earth" onclick="document.getElementById('earthAudio').play()">
+    <img src="jupiter.png" alt="Jupiter" onclick="document.getElementById('jupiterAudio').play()">
+  </div>
 
-      <audio id="marsAudio" controls>
-        <source src="mars.mp3" type="audio/mpeg">  
-      </audio>
-      <audio id="earthAudio" controls>
-        <source src="earth.mp3" type="audio/mpeg">
-      </audio>
-        <audio id="jupiterAudio" controls>
-        <source src="jupiter.mp3" type="audio/mpeg">
-         </audio>
-      
-      <script>
-       function startMusic() {
-           document.getElementById("marsAudio").play();
-          document.getElementById("earthAudio").play();
-         document.getElementedById("jupiterAudio").play();
-      }
-    </script>
+  <!-- Ses dosyaları -->
+  <audio id="marsAudio" src="mars.mp3"></audio>
+  <audio id="earthAudio" src="earth.mp3"></audio>
+  <audio id="jupiterAudio" src="jupiter.mp3"></audio>
 
-    <footer>Created with GitHub Pages 🚀</footer>
+  <footer>Created with GitHub Pages 🚀</footer>
 </body>
 </html>
+
+
+ 
 
 
 
