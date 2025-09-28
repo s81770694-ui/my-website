@@ -1,64 +1,330 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Space Music</title>
-  <style>
-    body {
-      background: black;
-      color: yellow;
-      text-align: center;
-      font-family: Arial, sans-serif;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gezegenler — Müzikli Etkileşim</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --card:#0f1724;
+    --glass: rgba(255,255,255,0.03);
+    --accent: linear-gradient(90deg,#ffdd55,#ff7b7b);
+    --text:#e6eef8;
+    --muted: #9fb0cc;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.02), transparent 8%),
+      radial-gradient(1000px 500px at 90% 90%, rgba(255,255,255,0.01), transparent 6%),
+      var(--bg);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px;
+  }
 
-    h1 {
-      font-size: 40px;
-    }
+  .stage{
+    width:100%;
+    max-width:1100px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius:18px;
+    padding:28px;
+    box-shadow: 0 10px 40px rgba(2,6,23,0.7);
+    border: 1px solid rgba(255,255,255,0.03);
+    display:flex;
+    gap:24px;
+    align-items:center;
+  }
 
-    .planets {
-      display: flex;
-      justify-content: center;
-      gap: 30px; /* gezegenler arası boşluk */
-      margin-top: 20px;
-    }
+  .left{
+    flex:1;
+    min-width:360px;
+  }
+  .right{
+    width:420px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
 
-    .planets img {
-      width: 120px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
+  h1{
+    margin:0 0 8px 0;
+    font-size:22px;
+    letter-spacing:0.2px;
+  }
+  p.lead{
+    margin:0 0 16px 0;
+    color:var(--muted);
+    line-height:1.5;
+  }
 
-    .planets img:hover {
-      transform: scale(1.2);
-    }
+  /* Solar system visual */
+  .system{
+    border-radius:12px;
+    padding:30px;
+    display:grid;
+    grid-template-columns: 1fr;
+    align-items:center;
+    justify-items:center;
+    position:relative;
+  }
 
-    footer {
-      margin-top: 50px;
-      font-size: 14px;
-      color: #aaa;
-    }
-  </style>
+  .orbits{
+    width:320px;
+    height:320px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .orbit{
+    position:absolute;
+    border-radius:50%;
+    border:1px dashed rgba(255,255,255,0.04);
+    transform-origin:center;
+  }
+
+  /* different orbit sizes */
+  .orbit.o1{width:62px;height:62px;}
+  .orbit.o2{width:100px;height:100px;}
+  .orbit.o3{width:148px;height:148px;}
+  .orbit.o4{width:194px;height:194px;}
+  .orbit.o5{width:240px;height:240px;}
+  .orbit.o6{width:286px;height:286px;}
+
+  .planet{
+    position:absolute;
+    top:50%;
+    left:50%;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform .18s ease, box-shadow .18s ease;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  .planet .core{
+    border-radius:50%;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 -6px 18px rgba(0,0,0,0.35);
+    transition: transform .25s ease;
+    display:block;
+  }
+
+  .planet:hover{ transform: scale(1.06); }
+  .planet:active{ transform: scale(.98); }
+
+  /* --- ANİMASYON --- */
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(var(--dist)) rotate(0deg); }
+    to   { transform: rotate(360deg) translateX(var(--dist)) rotate(-360deg); }
+  }
+
+  /* planet sizes & animations */
+  .p-mercury{ --dist:31px; width:18px;height:18px; animation: orbit 4s linear infinite; }
+  .p-venus  { --dist:50px; width:22px;height:22px; animation: orbit 7s linear infinite; }
+  .p-earth  { --dist:74px; width:26px;height:26px; animation: orbit 10s linear infinite; }
+  .p-mars   { --dist:93px; width:20px;height:20px; animation: orbit 15s linear infinite; }
+  .p-jupiter{ --dist:120px;width:44px;height:44px; animation: orbit 25s linear infinite; }
+  .p-saturn { --dist:145px;width:40px;height:40px; animation: orbit 30s linear infinite; }
+
+  /* planet styles */
+  .mercury .core{ background: linear-gradient(180deg, #c2c2c2, #8a8a8a); }
+  .venus   .core{ background: linear-gradient(180deg, #ffd89b, #ffb56b); }
+  .earth   .core{ background: linear-gradient(180deg, #7ec8ff, #2a7fb3); }
+  .mars    .core{ background: linear-gradient(180deg, #ffb299, #c9553e); }
+  .jupiter .core{ background: linear-gradient(180deg, #f8e6c9, #d19b63); }
+  .saturn  .core{ background: linear-gradient(180deg, #f1eaff, #d1b6ff); position:relative; }
+
+  /* Saturn ring */
+  .saturn .ring{
+    position:absolute;
+    width:60px;height:16px;
+    border-radius:50%;
+    left:50%; top:50%;
+    transform: translate(-50%,-50%) rotate(18deg);
+    background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+    box-shadow: 0 6px 30px rgba(0,0,0,0.35) inset;
+    z-index:-1;
+  }
+
+  /* indicator & info */
+  .info{
+    padding:18px;
+    border-radius:12px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 6px 22px rgba(2,6,23,0.45);
+  }
+
+  .info .title{ font-weight:600; margin:0 0 6px 0; }
+  .info .desc{ margin:0; color:var(--muted); font-size:14px; line-height:1.4; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    margin-top:6px;
+    align-items:center;
+  }
+
+  .btn{
+    background:var(--glass);
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .meter{
+    height:8px;
+    border-radius:999px;
+    background: linear-gradient(90deg,#2bf,#08f);
+    width:0%;
+    transition: width .18s linear;
+  }
+
+  footer{
+    margin-top:12px;
+    font-size:12px;color:var(--muted);
+  }
+
+  /* responsive */
+  @media (max-width:900px){
+    .stage{flex-direction:column; padding:18px;}
+    .right{width:100%;}
+    .orbits{width:260px;height:260px;}
+  }
+</style>
 </head>
 <body>
-  <h1>Welcome to Space!</h1>
-  <p>Click a planet to hear its music!</p>
+  <div class="stage">
+    <div class="left">
+      <h1>Gezegenler — Müzik Etkileşimi</h1>
+      <p class="lead">Bir gezegene tıklayın: her gezegen için özel kısa bir melodi çalacak. Gezegenler ayrıca yörüngelerinde dönüyor.</p>
 
-  <div class="planets">
-    <img src="mars.png" alt="Mars" 
-      onclick="document.getElementById('marsAudio').play()">
-    <img src="earth.png" alt="Earth" 
-      onclick="document.getElementById('earthAudio').play()">
-    <img src="jupiter.png" alt="Jupiter" 
-      onclick="document.getElementById('jupiterAudio').play()">
+      <div class="system">
+        <div class="orbits">
+          <div class="orbit o1"></div>
+          <div class="orbit o2"></div>
+          <div class="orbit o3"></div>
+          <div class="orbit o4"></div>
+          <div class="orbit o5"></div>
+          <div class="orbit o6"></div>
+
+          <!-- Planets -->
+          <div class="planet p-mercury mercury" data-planet="mercury" title="Merkür"><span class="core"></span></div>
+          <div class="planet p-venus venus" data-planet="venus" title="Venüs"><span class="core"></span></div>
+          <div class="planet p-earth earth" data-planet="earth" title="Dünya"><span class="core"></span></div>
+          <div class="planet p-mars mars" data-planet="mars" title="Mars"><span class="core"></span></div>
+          <div class="planet p-jupiter jupiter" data-planet="jupiter" title="Jüpiter"><span class="core"></span></div>
+          <div class="planet p-saturn saturn" data-planet="saturn" title="Satürn"><span class="core"></span><div class="ring"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="info">
+        <div class="title" id="selectedTitle">Tıklayın — bir gezegen seçin</div>
+        <p class="desc" id="selectedDesc">Her gezegen kendi kısa melodisini çalar.</p>
+        <div class="controls" style="margin-top:12px;">
+          <button class="btn" id="stopAll">Dur (Stop)</button>
+          <button class="btn" id="random">Rastgele</button>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Hacim</div>
+          <input id="volume" type="range" min="0" max="1" step="0.01" value="0.6" style="width:100%;">
+          <div class="meter" id="visMeter" style="margin-top:10px;"></div>
+        </div>
+        <footer>Hazır — tek dosya. Gezegenler hem dönüyor hem de ses çalıyor.</footer>
+      </div>
+    </div>
   </div>
 
-  <!-- Ses dosyaları (görünmeyecek) -->
-  <audio id="marsAudio" src="mars.mp3"></audio>
-  <audio id="earthAudio" src="earth.mp3"></audio>
-  <audio id="jupiterAudio" src="jupiter.mp3"></audio>
-
-  <footer>Created with GitHub Pages 🚀</footer>
+<script>
+/* === Ses motoru (Web Audio) === */
+class AudioEngine {
+  constructor(){
+    this.ctx = null;
+    this.masterGain = null;
+    this.activeNodes = new Set();
+    this.volume = 0.6;
+    this.analyser = null;
+  }
+  ensureContext() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = this.volume;
+      this.masterGain.connect(this.ctx.destination);
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 2048;
+      this.masterGain.connect(this.analyser);
+    }
+  }
+  setVolume(v){ this.volume=v; if(this.masterGain) this.masterGain.gain.value=v; }
+  stopAll(){ for(const n of this.activeNodes){ try{n.osc.stop();}catch{} } this.activeNodes.clear(); }
+  playMelody(notes, tempo){
+    this.ensureContext();
+    if(this.ctx.state==="suspended") this.ctx.resume();
+    const beat=60/tempo, now=this.ctx.currentTime;
+    let t=now+0.05;
+    notes.forEach(n=>{
+      const osc=this.ctx.createOscillator();
+      const g=this.ctx.createGain();
+      osc.type=n.type||"sine"; osc.frequency.value=n.freq;
+      g.gain.setValueAtTime(0.001,t);
+      g.gain.exponentialRampToValueAtTime(this.volume,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+n.dur*beat);
+      osc.connect(g); g.connect(this.masterGain);
+      osc.start(t); osc.stop(t+n.dur*beat+0.05);
+      this.activeNodes.add({osc});
+      osc.onended=()=>this.activeNodes.delete({osc});
+      t+=n.dur*beat;
+    });
+  }
+  getRMS(){
+    if(!this.analyser) return 0;
+    const data=new Uint8Array(this.analyser.fftSize);
+    this.analyser.getByteTimeDomainData(data);
+    let sum=0; for(let i=0;i<data.length;i++){const v=(data[i]-128)/128; sum+=v*v;}
+    return Math.sqrt(sum/data.length);
+  }
+}
+const NOTES={C4:261.63,E4:329.63,G4:392,A4:440,B4:493,C5:523,D4:293,F4:349};
+const PLANET_SCORES={
+  mercury:{title:"Merkür — Hızlı",desc:"Kısa parlak motif",tempo:170,notes:[{freq:NOTES.C5,dur:0.25},{freq:NOTES.G4,dur:0.25},{freq:NOTES.E4,dur:0.5}]},
+  venus:{title:"Venüs — Yumuşak",desc:"Sıcak motif",tempo:100,notes:[{freq:NOTES.F4,dur:1},{freq:NOTES.A4,dur:0.5},{freq:NOTES.C5,dur:1}]},
+  earth:{title:"Dünya — Dengeli",desc:"Arpej",tempo:120,notes:[{freq:NOTES.C4,dur:0.5},{freq:NOTES.E4,dur:0.5},{freq:NOTES.G4,dur:0.5}]},
+  mars:{title:"Mars — Sert",desc:"Kısa vuruş",tempo:140,notes:[{freq:NOTES.G4,dur:0.5,type:'square'},{freq:NOTES.D4,dur:0.5}]},
+  jupiter:{title:"Jüpiter — Epik",desc:"Büyük akor",tempo:80,notes:[{freq:NOTES.C4,dur:1.5},{freq:NOTES.G4,dur:1.5}]},
+  saturn:{title:"Satürn — Gizemli",desc:"Yavaş motif",tempo:60,notes:[{freq:NOTES.E4,dur:1},{freq:NOTES.D4,dur:1.2},{freq:NOTES.C4,dur:1.5}]}
+};
+const engine=new AudioEngine();
+const planets=document.querySelectorAll('.planet');
+const title=document.getElementById('selectedTitle');
+const desc=document.getElementById('selectedDesc');
+planets.forEach(p=>p.addEventListener('click',()=>{
+  const key=p.dataset.planet, s=PLANET_SCORES[key];
+  title.textContent=s.title; desc.textContent=s.desc;
+  engine.playMelody(s.notes,s.tempo);
+}));
+document.getElementById('stopAll').onclick=()=>engine.stopAll();
+document.getElementById('random').onclick=()=>{
+  const keys=Object.keys(PLANET_SCORES);
+  document.querySelector('[data-planet="'+keys[Math.floor(Math.random()*keys.length)]+'"]').click();
+};
+document.getElementById('volume').oninput=e=>engine.setVolume(+e.target.value);
+function loop(){ document.getElementById('visMeter').style.width=Math.min(100,engine.getRMS()*600)+"%"; requestAnimationFrame(loop);} loop();
+</script>
 </body>
 </html>
 
