@@ -2,95 +2,62 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Güneş Sistemi - Müzikli</title>
+<title>Güneş Sistemi - Etkileşimli</title>
 <style>
 body {
   margin: 0;
-  background: radial-gradient(ellipse at bottom, #0d1a26 0%, #000 100%);
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  background: black;
   color: white;
   font-family: Arial, sans-serif;
+  overflow: hidden;
 }
 .container {
   display: flex;
-  gap: 40px;
+  height: 100vh;
 }
 .system {
+  flex: 3;
   position: relative;
-  width: 800px;
-  height: 800px;
+  background: radial-gradient(ellipse at center, #000 70%, #010101 100%);
+  overflow: hidden;
 }
-.orbit {
+.starfield {
   position: absolute;
-  border: 1px dashed rgba(255,255,255,0.2);
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
 }
 .planet {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: -50% 0;
   cursor: pointer;
-  animation: orbit linear infinite;
+  transition: transform 0.5s ease;
 }
 .planet img {
-  display: block;
   border-radius: 50%;
   box-shadow: 0 0 15px rgba(255,255,255,0.4);
 }
-@keyframes orbit {
-  from { transform: rotate(0deg) translateX(var(--dist)); }
-  to   { transform: rotate(360deg) translateX(var(--dist)); }
-}
-.sun {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: url("https://upload.wikimedia.org/wikipedia/commons/4/4e/Sun_white.jpg") no-repeat center/cover;
-  box-shadow: 0 0 80px 40px rgba(255,200,50,0.8);
-}
 .sidebar {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 15px;
-  font-size: 20px;
-  background: rgba(0,0,0,0.3);
+  flex: 1;
+  background: rgba(0,0,0,0.6);
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  overflow-y: auto;
 }
 .planet-name {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: transform 0.2s, color 0.3s, box-shadow 0.3s;
-  padding: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
   border-radius: 5px;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 .planet-name:hover {
-  color: gold;
+  background: rgba(255,255,255,0.2);
   transform: scale(1.05);
-  box-shadow: 0 0 10px gold;
 }
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 5px rgba(255,255,255,0.4);
+.info-box {
+  margin-top: 20px;
+  padding: 10px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 5px;
 }
 </style>
 </head>
@@ -98,46 +65,42 @@ body {
 
 <div class="container">
   <div class="system">
-    <div class="sun"></div>
+    <canvas id="starfield" class="starfield"></canvas>
 
-    <div class="orbit" style="width:160px;height:160px;"></div>
-    <div class="planet" data-sound="mercury" style="--dist:80px; animation-duration:12s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg" width="22">
+    <div class="planet" id="mercury" style="top:40%;left:40%;" data-sound="mercury" data-info="Merkür: Güneş'e en yakın gezegen, yüzeyi kraterlerle doludur.">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg" width="50">
     </div>
 
-    <div class="orbit" style="width:220px;height:220px;"></div>
-    <div class="planet" data-sound="venus" style="--dist:110px; animation-duration:18s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg" width="30">
+    <div class="planet" id="venus" style="top:45%;left:45%;" data-sound="venus" data-info="Venüs: Yoğun atmosferi ve yüzey sıcaklığı ile bilinir.">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg" width="60">
     </div>
 
-    <div class="orbit" style="width:300px;height:300px;"></div>
-    <div class="planet" data-sound="earth" style="--dist:150px; animation-duration:25s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" width="35">
+    <div class="planet" id="earth" style="top:50%;left:50%;" data-sound="earth" data-info="Dünya: Yaşanabilir tek gezegen, su ve canlı yaşamı içerir.">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" width="70">
     </div>
 
-    <div class="orbit" style="width:380px;height:380px;"></div>
-    <div class="planet" data-sound="mars" style="--dist:190px; animation-duration:30s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg" width="28">
+    <div class="planet" id="mars" style="top:55%;left:55%;" data-sound="mars" data-info="Mars: Kızıl gezegen, üzerinde su izleri bulunmuştur.">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg" width="60">
     </div>
 
-    <div class="orbit" style="width:480px;height:480px;"></div>
-    <div class="planet" data-sound="jupiter" style="--dist:240px; animation-duration:40s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" width="60">
+    <div class="planet" id="jupiter" style="top:60%;left:60%;" data-sound="jupiter" data-info="Jüpiter: Güneş Sistemi'nin en büyük gezegeni, gaz devi.">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" width="100">
     </div>
 
-    <div class="orbit" style="width:600px;height:600px;"></div>
-    <div class="planet" data-sound="saturn" style="--dist:300px; animation-duration:50s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg" width="55">
+    <div class="planet" id="saturn" style="top:65%;left:65%;" data-sound="saturn" data-info="Satürn: Ünlü halkalarıyla tanınır, gaz devi.">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg" width="90">
     </div>
   </div>
 
   <div class="sidebar">
-    <div class="planet-name" data-sound="mercury"><span class="dot" style="background:#aaa;"></span> Merkür</div>
-    <div class="planet-name" data-sound="venus"><span class="dot" style="background:#f5e4b7;"></span> Venüs</div>
-    <div class="planet-name" data-sound="earth"><span class="dot" style="background:#4a90e2;"></span> Dünya</div>
-    <div class="planet-name" data-sound="mars"><span class="dot" style="background:#c1440e;"></span> Mars</div>
-    <div class="planet-name" data-sound="jupiter"><span class="dot" style="background:#d9b382;"></span> Jüpiter</div>
-    <div class="planet-name" data-sound="saturn"><span class="dot" style="background:#f7dfc6;"></span> Satürn</div>
+    <div class="planet-name" data-sound="mercury" data-info="Merkür: Güneş'e en yakın gezegen, yüzeyi kraterlerle doludur.">Merkür</div>
+    <div class="planet-name" data-sound="venus" data-info="Venüs: Yoğun atmosferi ve yüzey sıcaklığı ile bilinir.">Venüs</div>
+    <div class="planet-name" data-sound="earth" data-info="Dünya: Yaşanabilir tek gezegen, su ve canlı yaşamı içerir.">Dünya</div>
+    <div class="planet-name" data-sound="mars" data-info="Mars: Kızıl gezegen, üzerinde su izleri bulunmuştur.">Mars</div>
+    <div class="planet-name" data-sound="jupiter" data-info="Jüpiter: Güneş Sistemi'nin en büyük gezegeni, gaz devi.">Jüpiter</div>
+    <div class="planet-name" data-sound="saturn" data-info="Satürn: Ünlü halkalarıyla tanınır, gaz devi.">Satürn</div>
+
+    <div class="info-box" id="infoBox">Gezegen hakkında bilgi buraya gelecek.</div>
   </div>
 </div>
 
@@ -156,11 +119,26 @@ function initAudio(){
     audioMap[audio.id.replace("Audio","")] = audio;
   });
 }
+
 document.addEventListener("DOMContentLoaded", ()=>{
   initAudio();
+
   document.querySelectorAll('[data-sound]').forEach(el=>{
     el.addEventListener('click', ()=>{
       let name = el.getAttribute('data-sound');
+      let info = el.getAttribute('data-info');
+
+      // Bilgi göster
+      document.getElementById("infoBox").innerText = info;
+
+      // Gezegen büyütme efekti
+      let planetEl = document.getElementById(name);
+      if (planetEl) {
+        planetEl.style.transform = "scale(1.5)";
+        setTimeout(()=>{planetEl.style.transform = "scale(1)";}, 2000);
+      }
+
+      // Ses çalma
       let audio = audioMap[name];
       if(audio){
         audio.currentTime = 0;
@@ -168,6 +146,36 @@ document.addEventListener("DOMContentLoaded", ()=>{
       }
     });
   });
+
+  // Yıldız animasyonu
+  const canvas = document.getElementById("starfield");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth * 0.75;
+  canvas.height = window.innerHeight;
+
+  const stars = [];
+  for(let i=0;i<200;i++){
+    stars.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      radius: Math.random()*1.5,
+      speed: Math.random()*0.5
+    });
+  }
+
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    stars.forEach(star=>{
+      ctx.beginPath();
+      ctx.arc(star.x,star.y,star.radius,0,Math.PI*2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      star.x -= star.speed;
+      if(star.x<0) star.x=canvas.width;
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
 });
 </script>
 
