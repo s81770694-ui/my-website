@@ -15,10 +15,14 @@
       color: white;
       font-family: Arial, sans-serif;
     }
+    .container {
+      display: flex;
+      gap: 50px;
+    }
     .system {
       position: relative;
-      width: 900px;
-      height: 900px;
+      width: 800px;
+      height: 800px;
     }
     .orbit {
       position: absolute;
@@ -34,14 +38,14 @@
       left: 50%;
       transform-origin: -50% 0;
       cursor: pointer;
-      animation: spin linear infinite;
+      animation: orbit linear infinite;
     }
     .planet img {
       display: block;
       border-radius: 50%;
       box-shadow: 0 0 15px rgba(255,255,255,0.3);
     }
-    @keyframes spin {
+    @keyframes orbit {
       from { transform: rotate(0deg) translateX(var(--dist)); }
       to   { transform: rotate(360deg) translateX(var(--dist)); }
     }
@@ -56,45 +60,70 @@
       background: url("https://upload.wikimedia.org/wikipedia/commons/4/4e/Sun_white.jpg") no-repeat center/cover;
       box-shadow: 0 0 80px 40px rgba(255,200,50,0.8);
     }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 15px;
+      font-size: 20px;
+    }
+    .planet-name {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .planet-name:hover {
+      color: gold;
+    }
   </style>
 </head>
 <body>
-  <div class="system">
-    <div class="sun"></div>
+  <div class="container">
+    <div class="system">
+      <div class="sun"></div>
 
-    <div class="orbit" style="width:160px;height:160px;"></div>
-    <div class="planet" style="--dist:80px; animation-duration:4s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg" width="22">
+      <div class="orbit" style="width:160px;height:160px;"></div>
+      <div class="planet" data-sound="mercury" style="--dist:80px; animation-duration:10s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg" width="22">
+      </div>
+
+      <div class="orbit" style="width:220px;height:220px;"></div>
+      <div class="planet" data-sound="venus" style="--dist:110px; animation-duration:15s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg" width="30">
+      </div>
+
+      <div class="orbit" style="width:300px;height:300px;"></div>
+      <div class="planet" data-sound="earth" style="--dist:150px; animation-duration:20s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" width="35">
+      </div>
+
+      <div class="orbit" style="width:380px;height:380px;"></div>
+      <div class="planet" data-sound="mars" style="--dist:190px; animation-duration:25s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg" width="28">
+      </div>
+
+      <div class="orbit" style="width:480px;height:480px;"></div>
+      <div class="planet" data-sound="jupiter" style="--dist:240px; animation-duration:35s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" width="60">
+      </div>
+
+      <div class="orbit" style="width:600px;height:600px;"></div>
+      <div class="planet" data-sound="saturn" style="--dist:300px; animation-duration:45s;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg" width="55">
+      </div>
     </div>
 
-    <div class="orbit" style="width:220px;height:220px;"></div>
-    <div class="planet" style="--dist:110px; animation-duration:7s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg" width="30">
-    </div>
-
-    <div class="orbit" style="width:300px;height:300px;"></div>
-    <div class="planet" style="--dist:150px; animation-duration:10s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" width="35">
-    </div>
-
-    <div class="orbit" style="width:380px;height:380px;"></div>
-    <div class="planet" style="--dist:190px; animation-duration:15s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg" width="28">
-    </div>
-
-    <div class="orbit" style="width:480px;height:480px;"></div>
-    <div class="planet" style="--dist:240px; animation-duration:25s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" width="60">
-    </div>
-
-    <div class="orbit" style="width:600px;height:600px;"></div>
-    <div class="planet" style="--dist:300px; animation-duration:30s;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg" width="55">
+    <div class="sidebar">
+      <div class="planet-name" data-sound="mercury">Merkür</div>
+      <div class="planet-name" data-sound="venus">Venüs</div>
+      <div class="planet-name" data-sound="earth">Dünya</div>
+      <div class="planet-name" data-sound="mars">Mars</div>
+      <div class="planet-name" data-sound="jupiter">Jüpiter</div>
+      <div class="planet-name" data-sound="saturn">Satürn</div>
     </div>
   </div>
 
   <script>
-    // Ses motoru (gezegene tıklayınca bip sesi çıkarır)
+    // Ses motoru
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     function playNote(freq){
       const osc = ctx.createOscillator();
@@ -108,15 +137,27 @@
       osc.stop(ctx.currentTime + 1);
     }
 
-    // Gezegenlere farklı ses atama
-    document.querySelectorAll('.planet').forEach((p,i)=>{
-      p.addEventListener('click',()=>{
-        playNote(220 + i*100); 
+    // Gezegenlere frekanslar ata
+    const freqs = {
+      mercury: 220,
+      venus: 330,
+      earth: 440,
+      mars: 550,
+      jupiter: 660,
+      saturn: 770
+    };
+
+    // Hem gezegenlere hem isim listesine tıklama olayı
+    document.querySelectorAll('[data-sound]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const name = el.getAttribute('data-sound');
+        playNote(freqs[name]);
       });
     });
   </script>
 </body>
 </html>
+
 
 
   
