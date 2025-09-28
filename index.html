@@ -4,94 +4,94 @@
 <meta charset="UTF-8">
 <title>Güneş Sistemi - Müzikli</title>
 <style>
-  body {
-    margin: 0;
-    background: radial-gradient(ellipse at bottom, #0d1a26 0%, #000 100%);
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    color: white;
-    font-family: Arial, sans-serif;
-  }
-  .container {
-    display: flex;
-    gap: 40px;
-  }
-  .system {
-    position: relative;
-    width: 800px;
-    height: 800px;
-  }
-  .orbit {
-    position: absolute;
-    border: 1px dashed rgba(255,255,255,0.2);
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .planet {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform-origin: -50% 0;
-    cursor: pointer;
-    animation: orbit linear infinite;
-  }
-  .planet img {
-    display: block;
-    border-radius: 50%;
-    box-shadow: 0 0 15px rgba(255,255,255,0.4);
-  }
-  @keyframes orbit {
-    from { transform: rotate(0deg) translateX(var(--dist)); }
-    to   { transform: rotate(360deg) translateX(var(--dist)); }
-  }
-  .sun {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background: url("https://upload.wikimedia.org/wikipedia/commons/4/4e/Sun_white.jpg") no-repeat center/cover;
-    box-shadow: 0 0 80px 40px rgba(255,200,50,0.8);
-  }
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 15px;
-    font-size: 20px;
-    background: rgba(0,0,0,0.3);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(255,255,255,0.2);
-  }
-  .planet-name {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: transform 0.2s, color 0.3s, box-shadow 0.3s;
-    padding: 8px;
-    border-radius: 5px;
-  }
-  .planet-name:hover {
-    color: gold;
-    transform: scale(1.05);
-    box-shadow: 0 0 10px gold;
-  }
-  .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 5px rgba(255,255,255,0.4);
-  }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at bottom, #0d1a26 0%, #000 100%);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+.container {
+  display: flex;
+  gap: 40px;
+}
+.system {
+  position: relative;
+  width: 800px;
+  height: 800px;
+}
+.orbit {
+  position: absolute;
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.planet {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: -50% 0;
+  cursor: pointer;
+  animation: orbit linear infinite;
+}
+.planet img {
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255,255,255,0.4);
+}
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(var(--dist)); }
+  to   { transform: rotate(360deg) translateX(var(--dist)); }
+}
+.sun {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: url("https://upload.wikimedia.org/wikipedia/commons/4/4e/Sun_white.jpg") no-repeat center/cover;
+  box-shadow: 0 0 80px 40px rgba(255,200,50,0.8);
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+  font-size: 20px;
+  background: rgba(0,0,0,0.3);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+.planet-name {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s, color 0.3s, box-shadow 0.3s;
+  padding: 8px;
+  border-radius: 5px;
+}
+.planet-name:hover {
+  color: gold;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px gold;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 5px rgba(255,255,255,0.4);
+}
 </style>
 </head>
 <body>
@@ -141,7 +141,7 @@
   </div>
 </div>
 
-<!-- Gezegen ses dosyaları -->
+<!-- Ses Dosyaları -->
 <audio id="mercuryAudio" src="mercury.mp3"></audio>
 <audio id="venusAudio" src="venus.mp3"></audio>
 <audio id="earthAudio" src="earth.mp3"></audio>
@@ -150,14 +150,23 @@
 <audio id="saturnAudio" src="saturn.mp3"></audio>
 
 <script>
-document.querySelectorAll('[data-sound]').forEach(el=>{
-  el.addEventListener('click', ()=>{
-    const name = el.getAttribute('data-sound');
-    const audio = document.getElementById(name + "Audio");
-    if (audio) {
-      audio.currentTime = 0;
-      audio.play();
-    }
+let audioMap = {};
+function initAudio(){
+  document.querySelectorAll("audio").forEach(audio=>{
+    audioMap[audio.id.replace("Audio","")] = audio;
+  });
+}
+document.addEventListener("DOMContentLoaded", ()=>{
+  initAudio();
+  document.querySelectorAll('[data-sound]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      let name = el.getAttribute('data-sound');
+      let audio = audioMap[name];
+      if(audio){
+        audio.currentTime = 0;
+        audio.play();
+      }
+    });
   });
 });
 </script>
