@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Güneş Sistemi - Etkileşimli</title>
+<title>Güneş Sistemi - Müzikli</title>
 <style>
   body {
     margin: 0;
@@ -141,37 +141,23 @@
   </div>
 </div>
 
+<!-- Gezegen ses dosyaları -->
+<audio id="mercuryAudio" src="mercury.mp3"></audio>
+<audio id="venusAudio" src="venus.mp3"></audio>
+<audio id="earthAudio" src="earth.mp3"></audio>
+<audio id="marsAudio" src="mars.mp3"></audio>
+<audio id="jupiterAudio" src="jupiter.mp3"></audio>
+<audio id="saturnAudio" src="saturn.mp3"></audio>
+
 <script>
-let ctx = null;
-function initAudio() {
-  if (!ctx) {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-}
-function playNote(freq){
-  initAudio();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = "sine";
-  osc.frequency.value = freq;
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1);
-  osc.stop(ctx.currentTime + 1);
-}
-const freqs = {
-  mercury: 220,
-  venus: 330,
-  earth: 440,
-  mars: 550,
-  jupiter: 660,
-  saturn: 770
-};
 document.querySelectorAll('[data-sound]').forEach(el=>{
   el.addEventListener('click', ()=>{
     const name = el.getAttribute('data-sound');
-    playNote(freqs[name]);
+    const audio = document.getElementById(name + "Audio");
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play();
+    }
   });
 });
 </script>
