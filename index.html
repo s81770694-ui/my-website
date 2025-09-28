@@ -1,335 +1,677 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gezegenler — Müzikli Etkileşim</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Gelişmiş Güneş Sistemi — Gezegen Ses Deneyi</title>
 <style>
+  /* ---------- Temel ---------- */
   :root{
-    --bg:#0b1220;
-    --card:#0f1724;
+    --bg:#05060a;
+    --panel:#0f1724;
+    --muted:#9fb0cc;
+    --accent1:#ffd966;
     --glass: rgba(255,255,255,0.03);
-    --accent: linear-gradient(90deg,#ffdd55,#ff7b7b);
-    --text:#e6eef8;
-    --muted: #9fb0cc;
+    --ui-radius:14px;
   }
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  body{
-    background:
-      radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.02), transparent 8%),
-      radial-gradient(1000px 500px at 90% 90%, rgba(255,255,255,0.01), transparent 6%),
-      var(--bg);
-    color:var(--text);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:32px;
-  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;color:#e8f0fb;background: radial-gradient(1200px 700px at 10% 10%, rgba(255,255,255,0.02), transparent 6%), linear-gradient(180deg,#02030a 10%, #04112a 100%);}
+  .wrap{min-height:100%;display:flex;gap:22px;padding:28px;align-items:flex-start;justify-content:center;}
 
-  .stage{
-    width:100%;
-    max-width:1100px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  /* ---------- Sahne (sol) ---------- */
+  .scene{
+    width:820px;
+    height:620px;
     border-radius:18px;
-    padding:28px;
-    box-shadow: 0 10px 40px rgba(2,6,23,0.7);
-    border: 1px solid rgba(255,255,255,0.03);
-    display:flex;
-    gap:24px;
-    align-items:center;
-  }
-
-  .left{
-    flex:1;
-    min-width:360px;
-  }
-  .right{
-    width:420px;
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-  }
-
-  h1{
-    margin:0 0 8px 0;
-    font-size:22px;
-    letter-spacing:0.2px;
-  }
-  p.lead{
-    margin:0 0 16px 0;
-    color:var(--muted);
-    line-height:1.5;
-  }
-
-  /* Solar system visual */
-  .system{
-    border-radius:12px;
-    padding:30px;
-    display:grid;
-    grid-template-columns: 1fr;
-    align-items:center;
-    justify-items:center;
     position:relative;
-  }
-
-  .orbits{
-    width:320px;
-    height:320px;
-    position:relative;
+    overflow:hidden;
+    background: radial-gradient(800px 400px at 80% 30%, rgba(255,255,255,0.02), transparent 5%), rgba(0,0,0,0.12);
+    box-shadow: 0 30px 80px rgba(2,6,23,0.7);
+    border:1px solid rgba(255,255,255,0.03);
     display:flex;
     align-items:center;
     justify-content:center;
   }
 
-  .orbit{
+  /* yıldızlar arkaplan (canvas içinde) */
+  #starfield{ position:absolute; inset:0; z-index:0; }
+
+  /* güneş (merkez) */
+  .sun{
     position:absolute;
-    border-radius:50%;
-    border:1px dashed rgba(255,255,255,0.04);
-    transform-origin:center;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:120px;height:120px;border-radius:50%;
+    background: radial-gradient(circle at 30% 25%, #fff2b8 0%, #ffd964 20%, #ff9511 45%, #bb3d00 100%);
+    box-shadow: 0 0 120px 40px rgba(255,160,64,0.12), inset 0 -18px 50px rgba(0,0,0,0.25);
+    z-index:10;
+    filter: drop-shadow(0 16px 40px rgba(255,150,40,0.08));
+    pointer-events:none;
   }
 
-  /* different orbit sizes */
-  .orbit.o1{width:62px;height:62px;}
-  .orbit.o2{width:100px;height:100px;}
-  .orbit.o3{width:148px;height:148px;}
-  .orbit.o4{width:194px;height:194px;}
-  .orbit.o5{width:240px;height:240px;}
-  .orbit.o6{width:286px;height:286px;}
+  /* orbits container */
+  .orbits{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:2;
+  }
+  .orbit-ring{
+    position:absolute; border-radius:50%; border:1px dashed rgba(255,255,255,0.04); pointer-events:none;
+    backdrop-filter: blur(0.6px);
+  }
 
+  /* Gezegen kapsülleri: orbit + gezegen (rotate animasyon) */
+  .orbit-wrap{
+    position:absolute; left:50%; top:50%; transform-origin:center center; transform:translate(-50%,-50%);
+    pointer-events:auto;
+  }
+
+  /* Gezegenler: gölge, glow, 3d hissi için multiple backgrounds */
   .planet{
     position:absolute;
-    top:50%;
-    left:50%;
+    left:50%; top:50%;
+    transform-origin: -9999px center; /* will be anchored by translateX in inline style */
+    display:flex; align-items:center; justify-content:center;
     cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     transition:transform .18s ease, box-shadow .18s ease;
     user-select:none;
-    -webkit-user-select:none;
+    z-index:5;
+    -webkit-tap-highlight-color: transparent;
   }
+  .planet:focus{ outline: 3px solid rgba(255,210,100,0.12); border-radius:50%; transform:scale(1.06); }
 
-  .planet .core{
+  .planet .surface{
     border-radius:50%;
-    box-shadow: 0 8px 30px rgba(2,6,23,0.6), inset 0 -6px 18px rgba(0,0,0,0.35);
+    box-shadow: 0 12px 30px rgba(2,6,23,0.6), inset 0 -8px 18px rgba(0,0,0,0.35);
     transition: transform .25s ease;
-    display:block;
+    transform-style:preserve-3d;
   }
 
-  .planet:hover{ transform: scale(1.06); }
-  .planet:active{ transform: scale(.98); }
-
-  /* --- ANİMASYON --- */
-  @keyframes orbit {
-    from { transform: rotate(0deg) translateX(var(--dist)) rotate(0deg); }
-    to   { transform: rotate(360deg) translateX(var(--dist)) rotate(-360deg); }
+  /* labels */
+  .label{
+    position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%); font-size:12px; color:var(--muted); text-align:center; pointer-events:none;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
   }
 
-  /* planet sizes & animations */
-  .p-mercury{ --dist:31px; width:18px;height:18px; animation: orbit 4s linear infinite; }
-  .p-venus  { --dist:50px; width:22px;height:22px; animation: orbit 7s linear infinite; }
-  .p-earth  { --dist:74px; width:26px;height:26px; animation: orbit 10s linear infinite; }
-  .p-mars   { --dist:93px; width:20px;height:20px; animation: orbit 15s linear infinite; }
-  .p-jupiter{ --dist:120px;width:44px;height:44px; animation: orbit 25s linear infinite; }
-  .p-saturn { --dist:145px;width:40px;height:40px; animation: orbit 30s linear infinite; }
-
-  /* planet styles */
-  .mercury .core{ background: linear-gradient(180deg, #c2c2c2, #8a8a8a); }
-  .venus   .core{ background: linear-gradient(180deg, #ffd89b, #ffb56b); }
-  .earth   .core{ background: linear-gradient(180deg, #7ec8ff, #2a7fb3); }
-  .mars    .core{ background: linear-gradient(180deg, #ffb299, #c9553e); }
-  .jupiter .core{ background: linear-gradient(180deg, #f8e6c9, #d19b63); }
-  .saturn  .core{ background: linear-gradient(180deg, #f1eaff, #d1b6ff); position:relative; }
-
-  /* Saturn ring */
-  .saturn .ring{
-    position:absolute;
-    width:60px;height:16px;
-    border-radius:50%;
-    left:50%; top:50%;
-    transform: translate(-50%,-50%) rotate(18deg);
-    background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
-    box-shadow: 0 6px 30px rgba(0,0,0,0.35) inset;
-    z-index:-1;
+  /* Gezegen özel stilleri (büyüklükler + texture via conic & radial) */
+  /* Merkür */
+  .p-mercury .surface{ width:26px;height:26px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.07), transparent 8%),
+      conic-gradient(from 120deg, #bfbfbf 0 12%, #9c9c9c 12% 28%, #b2b2b2 28% 45%, #8f8f8f 45% 100%),
+      linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.02));
+    border:1px solid rgba(0,0,0,0.18);
   }
 
-  /* indicator & info */
-  .info{
-    padding:18px;
-    border-radius:12px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.02));
-    border:1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 6px 22px rgba(2,6,23,0.45);
+  /* Venüs */
+  .p-venus .surface{ width:34px;height:34px;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 8%),
+      conic-gradient(from 40deg, #ffd9b2 0 20%, #ffb88a 20% 45%, #f0a06b 45% 100%),
+      linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.02));
+    border:1px solid rgba(0,0,0,0.12);
+    filter: saturate(1.05) contrast(1.03);
   }
 
-  .info .title{ font-weight:600; margin:0 0 6px 0; }
-  .info .desc{ margin:0; color:var(--muted); font-size:14px; line-height:1.4; }
-
-  .controls{
-    display:flex;
-    gap:10px;
-    margin-top:6px;
-    align-items:center;
+  /* Dünya (detaylı: mavi okyanus, kara) */
+  .p-earth .surface{ width:46px;height:46px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), transparent 6%),
+      conic-gradient(from 10deg, #0f62a3 0 18%, #1e8bd6 18% 32%, #0f4f86 32% 48%, #1f7cc6 48% 100%),
+      linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.01));
+    border:1px solid rgba(0,0,0,0.12);
+    box-shadow: 0 18px 50px rgba(20,80,180,0.06), inset 0 -6px 12px rgba(0,0,0,0.25);
+  }
+  /* overlay: kıtalar (SVG mask via pseudo) */
+  .p-earth .surface::after{
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background-image: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.06), transparent 6%);
+    mix-blend-mode: overlay;
+    pointer-events:none;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.18);
   }
 
-  .btn{
-    background:var(--glass);
-    border:1px solid rgba(255,255,255,0.03);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    transition: transform .12s ease, background .12s ease;
-  }
-  .btn:active{ transform: translateY(1px); }
-  .meter{
-    height:8px;
-    border-radius:999px;
-    background: linear-gradient(90deg,#2bf,#08f);
-    width:0%;
-    transition: width .18s linear;
+  /* Mars */
+  .p-mars .surface{ width:30px;height:30px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.05), transparent 6%),
+      conic-gradient(from 80deg,#ff9e82 0 22%, #d85b3b 22% 58%, #b34a33 58% 100%),
+      linear-gradient(180deg, rgba(0,0,0,0.06), rgba(255,255,255,0.01));
+    border:1px solid rgba(0,0,0,0.12);
   }
 
-  footer{
-    margin-top:12px;
-    font-size:12px;color:var(--muted);
+  /* Jupiter huge bands + storm */
+  .p-jupiter .surface{ width:84px;height:84px;
+    background:
+      radial-gradient(circle at 25% 25%, rgba(255,255,255,0.04), transparent 7%),
+      repeating-linear-gradient(90deg,#f6e7cc 0 12px, #e1b97a 12px 28px, #d6a36b 28px 44px),
+      linear-gradient(180deg, rgba(0,0,0,0.05), rgba(255,255,255,0.01));
+    border:1px solid rgba(0,0,0,0.12);
+    box-shadow: 0 18px 60px rgba(180,120,40,0.06);
   }
+  /* a subtle "great red spot" */
+  .p-jupiter .surface::after{
+    content:""; position:absolute; width:20px;height:12px; left:60%; top:48%; transform:rotate(-22deg); border-radius:8px;
+    background: linear-gradient(90deg,#b94b3b,#e07a5f);
+    box-shadow: 0 6px 20px rgba(180,80,40,0.18);
+  }
+
+  /* Saturn + ring */
+  .p-saturn .surface{ width:72px;height:72px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 6%),
+      repeating-linear-gradient(90deg,#f1e6ff 0 10px, #d8bff4 10px 32px, #cda6f0 32px 48px),
+      linear-gradient(180deg, rgba(0,0,0,0.05), rgba(255,255,255,0.01));
+    border:1px solid rgba(0,0,0,0.12);
+  }
+  .p-saturn .ring{
+    position:absolute; width:118px;height:34px; left:50%; top:50%; transform:translate(-50%,-50%) rotate(18deg);
+    border-radius:50%; background:linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35) inset; z-index:4;
+  }
+
+  /* Hover/pulse */
+  .planet:active .surface{ transform: scale(.96) }
+  .planet:hover .surface{ transform: translateZ(10px) scale(1.04); box-shadow: 0 28px 70px rgba(0,0,0,0.55); }
+
+  /* rotation animations (orbit + self-rotate) - variable durations set inline */
+  @keyframes orbit-rotate { from{ transform: rotate(0deg) } to { transform: rotate(360deg) } }
+  @keyframes self-rotate { from{ transform: rotate(0deg)} to{ transform: rotate(-360deg) } }
+
+  /* ---------- Sağ panel (UI) ---------- */
+  .panel{ width:360px; background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-radius:var(--ui-radius); padding:18px; box-shadow: 0 10px 40px rgba(2,6,23,0.6); border:1px solid rgba(255,255,255,0.03); z-index:20; }
+  .panel h2{ margin:0 0 8px 0; font-size:18px; }
+  .panel p.small{ margin:0 0 12px 0; color:var(--muted); font-size:13px; }
+  .planet-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; max-height:260px; overflow:auto; padding-right:6px; }
+  .pl-item{ display:flex; gap:10px; align-items:center; padding:8px; border-radius:10px; background:var(--glass); cursor:pointer; }
+  .pl-item:hover{ transform: translateX(6px); transition:transform .18s ease; }
+  .pl-bullet{ width:18px;height:18px;border-radius:50%; box-shadow:0 4px 14px rgba(0,0,0,0.5); }
+  .meta{ font-size:13px; color:var(--muted) }
+  .controls-row{ display:flex; gap:10px; margin-top:12px; align-items:center; }
+  .btn{ padding:8px 12px; background:rgba(255,255,255,0.02); border-radius:10px; border:1px solid rgba(255,255,255,0.03); cursor:pointer; font-weight:600; }
+  .file-row{ display:flex; gap:8px; margin-top:8px; align-items:center; }
+  input[type=file]{ display:block; }
+  .small-muted{ font-size:12px; color:var(--muted); margin-top:8px; }
 
   /* responsive */
-  @media (max-width:900px){
-    .stage{flex-direction:column; padding:18px;}
-    .right{width:100%;}
-    .orbits{width:260px;height:260px;}
-  }
+  @media (max-width:1200px){ .wrap{flex-direction:column;align-items:center} .scene{width:92%;height:560px} .panel{width:92%; max-width:920px;} }
+
 </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="left">
-      <h1>Gezegenler — Müzik Etkileşimi</h1>
-      <p class="lead">Bir gezegene tıklayın: her gezegen için özel kısa bir melodi çalacak. Gezegenler ayrıca yörüngelerinde dönüyor.</p>
+  <div class="wrap">
+    <!-- ---------- SCENE (left) ---------- -->
+    <div class="scene" role="application" aria-label="Güneş Sistemi Sahnesi">
+      <canvas id="starfield"></canvas>
 
-      <div class="system">
-        <div class="orbits">
-          <div class="orbit o1"></div>
-          <div class="orbit o2"></div>
-          <div class="orbit o3"></div>
-          <div class="orbit o4"></div>
-          <div class="orbit o5"></div>
-          <div class="orbit o6"></div>
+      <div class="sun" aria-hidden="true"></div>
 
-          <!-- Planets -->
-          <div class="planet p-mercury mercury" data-planet="mercury" title="Merkür"><span class="core"></span></div>
-          <div class="planet p-venus venus" data-planet="venus" title="Venüs"><span class="core"></span></div>
-          <div class="planet p-earth earth" data-planet="earth" title="Dünya"><span class="core"></span></div>
-          <div class="planet p-mars mars" data-planet="mars" title="Mars"><span class="core"></span></div>
-          <div class="planet p-jupiter jupiter" data-planet="jupiter" title="Jüpiter"><span class="core"></span></div>
-          <div class="planet p-saturn saturn" data-planet="saturn" title="Satürn"><span class="core"></span><div class="ring"></div></div>
+      <div class="orbits" id="orbitsContainer">
+        <!-- Orbit rings -->
+        <div class="orbit-ring" style="width:120px;height:120px;"></div>
+        <div class="orbit-ring" style="width:180px;height:180px;"></div>
+        <div class="orbit-ring" style="width:260px;height:260px;"></div>
+        <div class="orbit-ring" style="width:340px;height:340px;"></div>
+        <div class="orbit-ring" style="width:460px;height:460px;"></div>
+        <div class="orbit-ring" style="width:540px;height:540px;"></div>
+
+        <!-- Planets: each .orbit-wrap rotates; inside, planet is translated by --orbit-dist -->
+        <!-- Merkür -->
+        <div class="orbit-wrap" data-planet="mercury" style="width:120px;height:120px; animation: orbit-rotate 4s linear infinite;">
+          <div class="planet p-mercury" tabindex="0" style="transform: translate(-50%,-50%) rotate(12deg) translateX(46px);">
+            <div class="surface" aria-hidden="false"></div>
+            <div class="label">Merkür</div>
+          </div>
+        </div>
+
+        <!-- Venüs -->
+        <div class="orbit-wrap" data-planet="venus" style="width:180px;height:180px; animation: orbit-rotate 8s linear infinite;">
+          <div class="planet p-venus" tabindex="0" style="transform: translate(-50%,-50%) rotate(68deg) translateX(68px);">
+            <div class="surface"></div>
+            <div class="label">Venüs</div>
+          </div>
+        </div>
+
+        <!-- Dünya (asteroit halkası canvas içerecek) -->
+        <div class="orbit-wrap" data-planet="earth" style="width:260px;height:260px; animation: orbit-rotate 11s linear infinite;">
+          <div class="planet p-earth" tabindex="0" style="transform: translate(-50%,-50%) rotate(190deg) translateX(98px);">
+            <div class="surface"></div>
+            <div class="label">Dünya</div>
+            <!-- asteroid canvas around earth -->
+            <canvas class="earth-asteroids" width="220" height="220" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:6;"></canvas>
+          </div>
+        </div>
+
+        <!-- Mars -->
+        <div class="orbit-wrap" data-planet="mars" style="width:340px;height:340px; animation: orbit-rotate 15s linear infinite;">
+          <div class="planet p-mars" tabindex="0" style="transform: translate(-50%,-50%) rotate(300deg) translateX(150px);">
+            <div class="surface"></div>
+            <div class="label">Mars</div>
+          </div>
+        </div>
+
+        <!-- Jüpiter -->
+        <div class="orbit-wrap" data-planet="jupiter" style="width:460px;height:460px; animation: orbit-rotate 25s linear infinite;">
+          <div class="planet p-jupiter" tabindex="0" style="transform: translate(-50%,-50%) rotate(40deg) translateX(208px);">
+            <div class="surface"></div>
+            <div class="label">Jüpiter</div>
+          </div>
+        </div>
+
+        <!-- Satürn -->
+        <div class="orbit-wrap" data-planet="saturn" style="width:540px;height:540px; animation: orbit-rotate 32s linear infinite;">
+          <div class="planet p-saturn" tabindex="0" style="transform: translate(-50%,-50%) rotate(220deg) translateX(260px);">
+            <div class="surface"></div>
+            <div class="ring"></div>
+            <div class="label">Satürn</div>
+          </div>
+        </div>
+
+      </div> <!-- /orbits -->
+    </div> <!-- /scene -->
+
+    <!-- ---------- PANEL (right) ---------- -->
+    <aside class="panel" aria-label="Kontroller">
+      <h2>Güneş Sistemi — Kontroller</h2>
+      <p class="small">Bir gezegene tıkla. Kendi sesini yüklemek için dosya seç. Yüklenmişse önce senin dosyan çalar; yoksa otomatik WebAudio melodisi çalar.</p>
+
+      <div class="planet-list" id="planetList">
+        <!-- list items generated by script for exact colouring -->
+      </div>
+
+      <div class="controls-row">
+        <button class="btn" id="stopBtn">Tümünü Durdur</button>
+        <button class="btn" id="randomBtn">Rastgele Çal</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label style="font-weight:600;font-size:13px">Hacim</label>
+        <input id="volume" type="range" min="0" max="1" step="0.01" value="0.65" style="width:100%;margin-top:6px;">
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-weight:600">Ses Yükle (Her gezegen için)</div>
+          <div style="font-size:12px;color:var(--muted)">MP3 / OGG / WAV</div>
+        </div>
+
+        <div id="fileUploads" style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+          <!-- file inputs injected by script -->
+        </div>
+
+        <div class="small-muted">Dosya yüklersen tarayıcıdan çalınır. Öneri: kısa döngüsel klipler (5-20s).</div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label style="font-weight:600">Görünüm</label>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="toggleStars">Yıldızları Aç/Kapa</button>
+          <button class="btn" id="screenshotBtn">Ekran Görüntüsü Al</button>
         </div>
       </div>
-    </div>
 
-    <div class="right">
-      <div class="info">
-        <div class="title" id="selectedTitle">Tıklayın — bir gezegen seçin</div>
-        <p class="desc" id="selectedDesc">Her gezegen kendi kısa melodisini çalar.</p>
-        <div class="controls" style="margin-top:12px;">
-          <button class="btn" id="stopAll">Dur (Stop)</button>
-          <button class="btn" id="random">Rastgele</button>
-        </div>
-        <div style="margin-top:10px;">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Hacim</div>
-          <input id="volume" type="range" min="0" max="1" step="0.01" value="0.6" style="width:100%;">
-          <div class="meter" id="visMeter" style="margin-top:10px;"></div>
-        </div>
-        <footer>Hazır — tek dosya. Gezegenler hem dönüyor hem de ses çalıyor.</footer>
+      <div style="margin-top:12px;">
+        <div style="font-weight:600">Seçili:</div>
+        <div id="selectedInfo" style="margin-top:6px;color:var(--muted)">Henüz bir gezegen seçilmedi.</div>
       </div>
-    </div>
+    </aside>
   </div>
 
 <script>
-/* === Ses motoru (Web Audio) === */
-class AudioEngine {
-  constructor(){
-    this.ctx = null;
-    this.masterGain = null;
-    this.activeNodes = new Set();
-    this.volume = 0.6;
-    this.analyser = null;
+/* =========================
+   Gelişmiş Güneş Sistemi Script
+   - Starfield canvas (background)
+   - Dünya etrafında asteroid animasyonu (canvas)
+   - Gezegen tıklama: önce yüklenen ses çalınır; yoksa WebAudio jenerik melodi.
+   - Tek dosya, hiçbir dış bağımlılık yok.
+   ========================= */
+
+(() => {
+  /* ---------- yardımcıler ---------- */
+  const PLANETS = [
+    {key:'mercury', name:'Merkür', color:'#bfbfbf', bullet:'#bdbdbd'},
+    {key:'venus',   name:'Venüs',   color:'#ffbf8a', bullet:'#ffb56b'},
+    {key:'earth',   name:'Dünya',   color:'#2a8bd6', bullet:'#5fb1ff'},
+    {key:'mars',    name:'Mars',    color:'#d16445', bullet:'#ff9e82'},
+    {key:'jupiter', name:'Jüpiter', color:'#e0b37e', bullet:'#d19b63'},
+    {key:'saturn',  name:'Satürn',  color:'#cda6f0', bullet:'#d1b6ff'}
+  ];
+
+  // starfield canvas
+  const starCanvas = document.getElementById('starfield');
+  const scene = document.querySelector('.scene');
+  function resizeStarfield(){
+    starCanvas.width = scene.clientWidth;
+    starCanvas.height = scene.clientHeight;
   }
-  ensureContext() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.ctx = new AudioCtx();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = this.volume;
-      this.masterGain.connect(this.ctx.destination);
-      this.analyser = this.ctx.createAnalyser();
-      this.analyser.fftSize = 2048;
-      this.masterGain.connect(this.analyser);
+  window.addEventListener('resize', resizeStarfield);
+  resizeStarfield();
+
+  const sctx = starCanvas.getContext('2d');
+  let stars = [];
+  function regenStars(){
+    stars = [];
+    const count = Math.floor((starCanvas.width*starCanvas.height)/12000);
+    for(let i=0;i<count;i++){
+      stars.push({
+        x: Math.random()*starCanvas.width,
+        y: Math.random()*starCanvas.height,
+        r: Math.random()*1.6+0.3,
+        a: Math.random()*0.8+0.2,
+        twinkle: Math.random()*0.02+0.005
+      });
     }
   }
-  setVolume(v){ this.volume=v; if(this.masterGain) this.masterGain.gain.value=v; }
-  stopAll(){ for(const n of this.activeNodes){ try{n.osc.stop();}catch{} } this.activeNodes.clear(); }
-  playMelody(notes, tempo){
-    this.ensureContext();
-    if(this.ctx.state==="suspended") this.ctx.resume();
-    const beat=60/tempo, now=this.ctx.currentTime;
-    let t=now+0.05;
-    notes.forEach(n=>{
-      const osc=this.ctx.createOscillator();
-      const g=this.ctx.createGain();
-      osc.type=n.type||"sine"; osc.frequency.value=n.freq;
-      g.gain.setValueAtTime(0.001,t);
-      g.gain.exponentialRampToValueAtTime(this.volume,t+0.02);
-      g.gain.exponentialRampToValueAtTime(0.001,t+n.dur*beat);
-      osc.connect(g); g.connect(this.masterGain);
-      osc.start(t); osc.stop(t+n.dur*beat+0.05);
-      this.activeNodes.add({osc});
-      osc.onended=()=>this.activeNodes.delete({osc});
-      t+=n.dur*beat;
+  regenStars();
+
+  let starOn = true;
+  function drawStars(t){
+    sctx.clearRect(0,0,starCanvas.width,starCanvas.height);
+    if(!starOn) return;
+    for(const st of stars){
+      const a = st.a + Math.sin(t*st.twinkle + st.x*0.001)*0.4;
+      sctx.beginPath();
+      sctx.fillStyle = `rgba(255,255,255,${Math.max(0,Math.min(1,a))})`;
+      sctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
+      sctx.fill();
+    }
+  }
+
+  /* ---------- planet list UI ---------- */
+  const planetList = document.getElementById('planetList');
+  const fileUploads = document.getElementById('fileUploads');
+  const selectedInfo = document.getElementById('selectedInfo');
+
+  // create list & file inputs
+  PLANETS.forEach(p=>{
+    const item = document.createElement('div');
+    item.className = 'pl-item';
+    item.dataset.planet = p.key;
+    item.innerHTML = `<div class="pl-bullet" style="background:${p.bullet}"></div>
+                      <div style="flex:1"><div style="font-weight:700">${p.name}</div><div class="meta">Tıkla çal</div></div>
+                      <div style="font-size:12px;color:var(--muted)">${p.key}</div>`;
+    planetList.appendChild(item);
+
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.innerHTML = `<div style="flex:1">${p.name}</div>`;
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'audio/*';
+    input.dataset.planet = p.key;
+    input.title = 'Bu gezegen için ses dosyası yükle';
+    input.addEventListener('change', onFileSelected);
+    row.appendChild(input);
+    fileUploads.appendChild(row);
+
+    // click handler on list
+    item.addEventListener('click', ()=>triggerPlanetByKey(p.key));
+  });
+
+  /* ---------- asteroid canvas around earth ---------- */
+  const earthCanvas = document.querySelector('.earth-asteroids');
+  const ectx = earthCanvas.getContext('2d');
+  earthCanvas.width = earthCanvas.clientWidth;
+  earthCanvas.height = earthCanvas.clientHeight;
+  const asteroids = [];
+  for(let i=0;i<40;i++){
+    const a = Math.random()*Math.PI*2;
+    asteroids.push({
+      angle: a,
+      r: 46 + Math.random()*56,
+      speed: (Math.random()*0.6+0.2)*(Math.random()>0.5?1:-1),
+      size: Math.random()*2+0.6,
+      shade: Math.random()*60+30
     });
   }
-  getRMS(){
-    if(!this.analyser) return 0;
-    const data=new Uint8Array(this.analyser.fftSize);
-    this.analyser.getByteTimeDomainData(data);
-    let sum=0; for(let i=0;i<data.length;i++){const v=(data[i]-128)/128; sum+=v*v;}
-    return Math.sqrt(sum/data.length);
+  function drawAsteroids(dt){
+    ectx.clearRect(0,0,earthCanvas.width,earthCanvas.height);
+    ectx.save();
+    ectx.translate(earthCanvas.width/2, earthCanvas.height/2);
+    for(const ast of asteroids){
+      ast.angle += ast.speed * dt * 0.06;
+      const x = Math.cos(ast.angle)*ast.r;
+      const y = Math.sin(ast.angle)*(ast.r*0.86); // slight ellipse
+      ectx.beginPath();
+      const g = ectx.createRadialGradient(x,y,0,x,y,ast.size*4);
+      g.addColorStop(0, `rgba(${ast.shade},${ast.shade},${ast.shade},0.95)`);
+      g.addColorStop(1, `rgba(${ast.shade},${ast.shade},${ast.shade},0.02)`);
+      ectx.fillStyle = g;
+      ectx.arc(x,y,ast.size,0,Math.PI*2);
+      ectx.fill();
+    }
+    ectx.restore();
   }
-}
-const NOTES={C4:261.63,E4:329.63,G4:392,A4:440,B4:493,C5:523,D4:293,F4:349};
-const PLANET_SCORES={
-  mercury:{title:"Merkür — Hızlı",desc:"Kısa parlak motif",tempo:170,notes:[{freq:NOTES.C5,dur:0.25},{freq:NOTES.G4,dur:0.25},{freq:NOTES.E4,dur:0.5}]},
-  venus:{title:"Venüs — Yumuşak",desc:"Sıcak motif",tempo:100,notes:[{freq:NOTES.F4,dur:1},{freq:NOTES.A4,dur:0.5},{freq:NOTES.C5,dur:1}]},
-  earth:{title:"Dünya — Dengeli",desc:"Arpej",tempo:120,notes:[{freq:NOTES.C4,dur:0.5},{freq:NOTES.E4,dur:0.5},{freq:NOTES.G4,dur:0.5}]},
-  mars:{title:"Mars — Sert",desc:"Kısa vuruş",tempo:140,notes:[{freq:NOTES.G4,dur:0.5,type:'square'},{freq:NOTES.D4,dur:0.5}]},
-  jupiter:{title:"Jüpiter — Epik",desc:"Büyük akor",tempo:80,notes:[{freq:NOTES.C4,dur:1.5},{freq:NOTES.G4,dur:1.5}]},
-  saturn:{title:"Satürn — Gizemli",desc:"Yavaş motif",tempo:60,notes:[{freq:NOTES.E4,dur:1},{freq:NOTES.D4,dur:1.2},{freq:NOTES.C4,dur:1.5}]}
-};
-const engine=new AudioEngine();
-const planets=document.querySelectorAll('.planet');
-const title=document.getElementById('selectedTitle');
-const desc=document.getElementById('selectedDesc');
-planets.forEach(p=>p.addEventListener('click',()=>{
-  const key=p.dataset.planet, s=PLANET_SCORES[key];
-  title.textContent=s.title; desc.textContent=s.desc;
-  engine.playMelody(s.notes,s.tempo);
-}));
-document.getElementById('stopAll').onclick=()=>engine.stopAll();
-document.getElementById('random').onclick=()=>{
-  const keys=Object.keys(PLANET_SCORES);
-  document.querySelector('[data-planet="'+keys[Math.floor(Math.random()*keys.length)]+'"]').click();
-};
-document.getElementById('volume').oninput=e=>engine.setVolume(+e.target.value);
-function loop(){ document.getElementById('visMeter').style.width=Math.min(100,engine.getRMS()*600)+"%"; requestAnimationFrame(loop);} loop();
+
+  /* ---------- Audio: WebAudio + optional file playback ---------- */
+  class AudioManager {
+    constructor(){
+      this.ctx = null;
+      this.master = null;
+      this.analyser = null;
+      this.files = {}; // planetKey -> {url, buffer, element}
+      this.volume = 0.65;
+    }
+    ensure(){
+      if(this.ctx) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+      this.master = this.ctx.createGain(); this.master.gain.value = this.volume;
+      this.master.connect(this.ctx.destination);
+      this.analyser = this.ctx.createAnalyser(); this.analyser.fftSize = 2048;
+      this.master.connect(this.analyser);
+    }
+    setVolume(v){
+      this.ensure();
+      this.volume = v;
+      this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+    }
+    stopAll(){
+      // stop any playing <audio> elements
+      for(const key in this.files){
+        const f = this.files[key];
+        if(f && f.el){ try{ f.el.pause(); f.el.currentTime = 0; }catch{} }
+      }
+      // cannot reliably stop generated tones if using Oscillator nodes unless we track them — but we'll restart context if needed
+      // simple approach: create a silent gain ramp
+    }
+
+    async playPlanet(planetKey, fallbackMelody){
+      this.ensure();
+      if(this.ctx.state === 'suspended') try{ await this.ctx.resume(); }catch(e){}
+      const f = this.files[planetKey];
+      if(f && f.url){
+        // use HTMLAudioElement for file playback (better codec support)
+        if(!f.el){
+          f.el = new Audio(f.url);
+          f.el.preload = "auto";
+          f.el.loop = false;
+          // connect to master volume via WebAudio for smooth volume control
+          try{
+            const src = this.ctx.createMediaElementSource(f.el);
+            src.connect(this.master);
+          }catch(e){
+            // fallback: cannot connect (cross-origin), connect directly to destination
+            try{ f.el.volume = this.volume; }catch(e){}
+          }
+        }
+        try{
+          f.el.currentTime = 0;
+          await f.el.play();
+          return;
+        }catch(err){
+          console.warn("Audio element play failed, fallback to generated: ", err);
+          // fallback to generated
+        }
+      }
+      // fallback: generated melody via Oscillators
+      this.playGenerated(fallbackMelody);
+    }
+
+    playGenerated(melody){
+      // melody: {tempo, notes:[{freq,dur,type}]}
+      this.ensure();
+      const beat = 60 / melody.tempo;
+      const now = this.ctx.currentTime + 0.02;
+      let cursor = now;
+      for(const n of melody.notes){
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = n.type || 'sine';
+        osc.frequency.value = n.freq;
+        g.gain.setValueAtTime(0.0001, cursor);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0001, this.volume*1.0), cursor+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, cursor + n.dur*beat);
+        osc.connect(g); g.connect(this.master);
+        osc.start(cursor); osc.stop(cursor + n.dur*beat + 0.03);
+        cursor += n.dur*beat;
+      }
+    }
+
+    loadFileForPlanet(planetKey, file){
+      if(!file) return;
+      // revoke previous URL if existing
+      if(this.files[planetKey] && this.files[planetKey].url){
+        try{ URL.revokeObjectURL(this.files[planetKey].url); }catch(e){}
+      }
+      const url = URL.createObjectURL(file);
+      this.files[planetKey] = { url, file, el: null };
+    }
+  }
+
+  const audio = new AudioManager();
+
+  // simple note bank (equal-tempered)
+  const NOTES = { C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.0, A4:440.0, B4:493.88, C5:523.25, G3:196.0, C3:130.81 };
+
+  const MELODIES = {
+    mercury: { tempo:170, notes:[ {freq:NOTES.C5,dur:0.25},{freq:NOTES.G4,dur:0.25},{freq:NOTES.E4,dur:0.5},{freq:NOTES.C5,dur:0.25} ] },
+    venus:   { tempo:100, notes:[ {freq:NOTES.F4,dur:0.8},{freq:NOTES.A4,dur:0.5},{freq:NOTES.C5,dur:1} ] },
+    earth:   { tempo:120, notes:[ {freq:NOTES.C4,dur:0.5},{freq:NOTES.E4,dur:0.5},{freq:NOTES.G4,dur:0.5},{freq:NOTES.C5,dur:1} ] },
+    mars:    { tempo:140, notes:[ {freq:NOTES.G3,dur:0.5,type:'square'},{freq:NOTES.G3,dur:0.25,type:'square'},{freq:NOTES.D4,dur:0.75} ] },
+    jupiter: { tempo:70,  notes:[ {freq:NOTES.C3,dur:1.5},{freq:NOTES.G3,dur:1.5},{freq:NOTES.C4,dur:2.0} ] },
+    saturn:  { tempo:60,  notes:[ {freq:NOTES.E4,dur:1.0},{freq:NOTES.D4,dur:1.2},{freq:NOTES.C4,dur:1.8} ] }
+  };
+
+  /* ---------- Hook up UI to scene planets ---------- */
+  const planetEls = document.querySelectorAll('.planet');
+  planetEls.forEach(el=>{
+    const wrap = el.closest('.orbit-wrap');
+    const key = wrap.dataset.planet;
+    el.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      await audio.playPlanet(key, MELODIES[key]);
+      selectedInfo.textContent = `Çalıyor: ${PLANETS.find(p=>p.key===key).name}`;
+    });
+    el.addEventListener('keydown', async (e)=>{
+      if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+    });
+
+    // set subtle self-rotation animation on surface using CSS
+    const surface = el.querySelector('.surface');
+    const spinDur = 6 + Math.random()*8;
+    surface.style.animation = `self-rotate ${spinDur}s linear infinite`;
+    surface.style.animationTimingFunction = 'linear';
+    surface.style.willChange = 'transform';
+  });
+
+  /* ---------- file input handler ---------- */
+  function onFileSelected(e){
+    const file = e.target.files[0];
+    const key = e.target.dataset.planet;
+    if(!file) return;
+    audio.loadFileForPlanet(key, file);
+    // show small indicator in list
+    const li = [...planetList.children].find(n=>n.dataset.planet===key);
+    if(li){
+      li.querySelector('.meta').textContent = 'Özel ses yüklendi';
+      li.querySelector('.pl-bullet').style.boxShadow = '0 6px 18px rgba(0,0,0,0.45), inset 0 -3px 6px rgba(255,255,255,0.03)';
+    }
+  }
+
+  /* ---------- misc buttons ---------- */
+  document.getElementById('stopBtn').addEventListener('click', ()=>{ audio.stopAll(); selectedInfo.textContent = 'Tüm sesler durduruldu.'; });
+  document.getElementById('randomBtn').addEventListener('click', ()=>{
+    const k = PLANETS[Math.floor(Math.random()*PLANETS.length)].key;
+    triggerPlanetByKey(k);
+  });
+  document.getElementById('volume').addEventListener('input', (e)=> audio.setVolume(+e.target.value) );
+  document.getElementById('toggleStars').addEventListener('click', ()=> { starOn = !starOn; });
+  document.getElementById('screenshotBtn').addEventListener('click', takeScreenshot);
+
+  function triggerPlanetByKey(key){
+    const node = [...planetEls].find(p=> p.closest('.orbit-wrap').dataset.planet === key);
+    if(node) node.click();
+  }
+
+  /* ---------- screenshot helper (captures scene) ---------- */
+  async function takeScreenshot(){
+    // create an offscreen canvas, draw starfield and planets (approx)
+    try{
+      const w = scene.clientWidth, h = scene.clientHeight;
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      const ctx = c.getContext('2d');
+      // draw starfield from starCanvas
+      ctx.drawImage(starCanvas,0,0);
+      // draw sun
+      const sun = document.querySelector('.sun');
+      const sunRect = sun.getBoundingClientRect();
+      const sceneRect = scene.getBoundingClientRect();
+      function drawElAsCircle(elRect, style){
+        const cx = elRect.left - sceneRect.left + elRect.width/2;
+        const cy = elRect.top - sceneRect.top + elRect.height/2;
+        const r = Math.max(2, Math.min(elRect.width, elRect.height)/2);
+        const grad = ctx.createRadialGradient(cx - r*0.2, cy - r*0.25, r*0.05, cx, cy, r*1.2);
+        grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+        grad.addColorStop(0.2, 'rgba(255,200,80,0.95)');
+        grad.addColorStop(1, 'rgba(200,120,60,0.8)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      }
+      drawElAsCircle(sunRect);
+
+      // draw each planet by sampling its surface rendering quickly (approx with colored circle)
+      planetEls.forEach(pl=>{
+        const rect = pl.getBoundingClientRect();
+        const cx = rect.left - sceneRect.left + rect.width/2;
+        const cy = rect.top - sceneRect.top + rect.height/2;
+        const r = Math.max(6, Math.min(rect.width, rect.height)/2);
+        // pick bullet color from list
+        const key = pl.closest('.orbit-wrap').dataset.planet;
+        const col = PLANETS.find(x=>x.key===key).bullet;
+        const g = ctx.createRadialGradient(cx - r*0.2, cy - r*0.2, r*0.05, cx,cy,r*1.2);
+        g.addColorStop(0, 'rgba(255,255,255,0.9)');
+        g.addColorStop(0.3, col);
+        g.addColorStop(1, 'rgba(0,0,0,0.4)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+      });
+
+      // download
+      const uri = c.toDataURL('image/png');
+      const a = document.createElement('a'); a.href=uri; a.download='solar_system.png'; a.click();
+    }catch(err){
+      alert('Ekran görüntüsü alınamadı: ' + err.message);
+    }
+  }
+
+  /* ---------- main animation loop ---------- */
+  let last = performance.now();
+  function animate(now){
+    const dt = (now - last)/16.666; last = now;
+    drawStars(now*0.001);
+    drawAsteroids(dt);
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  // regenerate stars on resize
+  window.addEventListener('resize', ()=>{ resizeStarfield(); regenStars(); });
+
+  // initial small UI text
+  selectedInfo.textContent = 'Hazır — bir gezegene tıkla veya kendi sesini yükle.';
+})();
 </script>
 </body>
 </html>
 
-
- 
-
-
-
+  
